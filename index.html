@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EzExploit Admin | Key Generator</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'JetBrains Mono', monospace;
+            background-color: #0a0a0a;
+            color: #e5e5e5;
+        }
+        .neon-border {
+            box-shadow: 0 0 10px #06b6d4, 0 0 20px #06b6d4;
+        }
+        .neon-text {
+            text-shadow: 0 0 5px #06b6d4, 0 0 10px #06b6d4;
+        }
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #1a1a1a; 
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #333; 
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #06b6d4; 
+        }
+    </style>
+</head>
+<body class="flex items-center justify-center min-h-screen p-4">
+
+    <div class="w-full max-w-2xl border border-cyan-500/30 bg-gray-900/80 rounded-lg p-6 shadow-2xl backdrop-blur-sm">
+        
+        <div class="text-center mb-8">
+            <h1 class="text-3xl font-bold text-cyan-400 neon-text mb-2">EZ-EXPLOIT ADMIN</h1>
+            <p class="text-gray-400 text-sm">LICENSE MANAGEMENT SYSTEM</p>
+        </div>
+
+        <!-- YENİ VESSY BİLGİLERİ GÖMÜLDÜ -->
+        <div class="grid gap-4 mb-6">
+            <div>
+                <label class="block text-xs text-gray-500 mb-1">GITHUB TOKEN (ghp_...)</label>
+                <input type="password" id="githubToken" value="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" placeholder="Token'i buraya yapıştır" 
+                    class="w-full bg-black border border-gray-700 rounded p-2 text-green-400 focus:border-cyan-500 focus:outline-none transition">
+            </div>
+            
+            <div class="grid grid-cols-2 gap-4">
+                <div>
+                    <label class="block text-xs text-gray-500 mb-1">GIST ID</label>
+                    <input type="text" id="gistId" value="0bc119f4e27cbbc9cad9a253a3c1d3a3" 
+                        class="w-full bg-black border border-gray-700 rounded p-2 text-gray-300 focus:border-cyan-500 focus:outline-none">
+                </div>
+                <div>
+                    <label class="block text-xs text-gray-500 mb-1">DOSYA ADI</label>
+                    <input type="text" id="fileName" value="license.txt" 
+                        class="w-full bg-black border border-gray-700 rounded p-2 text-gray-300 focus:border-cyan-500 focus:outline-none">
+                </div>
+            </div>
+        </div>
+
+        <button onclick="generateAndUpload()" id="genBtn"
+            class="w-full bg-cyan-900/50 hover:bg-cyan-700 text-cyan-100 font-bold py-3 px-4 rounded border border-cyan-500/50 hover:neon-border transition-all duration-300 mb-6">
+            [ GENERATE NEW FREE KEY ]
+        </button>
+
+        <div class="bg-black border border-gray-800 rounded p-4 h-48 overflow-y-auto font-mono text-xs" id="consoleOutput">
+            <div class="text-gray-500">System ready... Waiting for command.</div>
+        </div>
+
+        <div class="mt-4 text-center text-xs text-gray-600">
+            STATUS: <span class="text-green-500">ONLINE</span> | API: <span class="text-blue-500">GITHUB REST v3</span>
+        </div>
+    </div>
+
+    <script>
+        const consoleDiv = document.getElementById('consoleOutput');
+        const btn = document.getElementById('genBtn');
+
+        function log(message, type = 'info') {
+            const div = document.createElement('div');
+            const time = new Date().toLocaleTimeString();
+            
+            if (type === 'error') div.className = 'text-red-500';
+            else if (type === 'success') div.className = 'text-green-400';
+            else if (type === 'warn') div.className = 'text-yellow-400';
+            else div.className = 'text-gray-300';
+
+            div.innerHTML = `<span class="text-gray-600">[${time}]</span> ${message}`;
+            consoleDiv.appendChild(div);
+            consoleDiv.scrollTop = consoleDiv.scrollHeight;
+        }
+
+        function generateKey() {
+            const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+            const part = () => Array(4).fill(0).map(() => chars[Math.floor(Math.random() * chars.length)]).join('');
+            // Key formatı: EZ-XXXX-XXXX-XXXX-FREE|HWID:NONE
+            return `EZ-${part()}-${part()}-${part()}-FREE|HWID:NONE`;
+        }
+
+        async function generateAndUpload() {
+            const token = document.getElementById('githubToken').value.trim();
+            const gistId = document.getElementById('gistId').value.trim();
+            const fileName = document.getElementById('fileName').value.trim();
+
+            if (!token) {
+                log("ERROR: Github Token girilmedi!", 'error');
+                return;
+            }
+
+            btn.disabled = true;
+            btn.innerText = "PROCESSING...";
+            btn.classList.add("opacity-50");
+
+            try {
+                // 1. Key Oluştur (Ekranda HWID kısmını gizleyerek gösterelim)
+                const newKeyFull = generateKey();
+                const newKeyDisplay = newKeyFull.split('|')[0]; 
+                log(`Generated Key: <span class="text-white font-bold select-all">${newKeyDisplay}</span>`, 'warn');
+
+                log("Connecting to GitHub API...", 'info');
+                
+                // 2. Mevcut Veriyi Çek
+                const getResponse = await fetch(`https://api.github.com/gists/${gistId}`, {
+                    method: 'GET',
+                    headers: {
+                        'Authorization': `token ${token}`,
+                        'Accept': 'application/vnd.github.v3+json'
+                    }
+                });
+
+                if (!getResponse.ok) throw new Error(`API Error: ${getResponse.status}`);
+
+                const gistData = await getResponse.json();
+                
+                if (!gistData.files || !gistData.files[fileName]) {
+                    throw new Error(`Dosya (${fileName}) Gist içinde bulunamadı!`);
+                }
+
+                const currentContent = gistData.files[fileName].content;
+                
+                // Eğer dosya boşsa sadece keyi, doluysa yeni satıra ekle
+                const newContent = currentContent ? (currentContent + "\n" + newKeyFull) : newKeyFull;
+
+                // 3. Güncelle (Upload)
+                log("Uploading to database...", 'info');
+
+                const updateBody = {
+                    files: {
+                        [fileName]: {
+                            content: newContent
+                        }
+                    }
+                };
+
+                const patchResponse = await fetch(`https://api.github.com/gists/${gistId}`, {
+                    method: 'PATCH',
+                    headers: {
+                        'Authorization': `token ${token}`,
+                        'Accept': 'application/vnd.github.v3+json',
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(updateBody)
+                });
+
+                if (!patchResponse.ok) throw new Error(`Update Failed: ${patchResponse.status}`);
+
+                log("SUCCESS: Key added & activated.", 'success');
+                log("----------------------------------------", 'info');
+
+            } catch (error) {
+                log(`CRITICAL ERROR: ${error.message}`, 'error');
+            } finally {
+                btn.disabled = false;
+                btn.innerText = "[ GENERATE NEW FREE KEY ]";
+                btn.classList.remove("opacity-50");
+            }
+        }
+    </script>
+</body>
+</html>
